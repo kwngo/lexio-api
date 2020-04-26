@@ -1,0 +1,24 @@
+version: "3.3"
+services:
+  postgres:
+    image: "postgres:11"
+    ports:
+      - "54320:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: postgres
+  api:
+    build:
+      context: .
+    image: api:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+    depends_on:
+      - postgres
+volumes:
+  postgres_data:
+
