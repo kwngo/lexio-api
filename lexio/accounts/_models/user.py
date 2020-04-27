@@ -1,18 +1,25 @@
-from lexio.base import Base, db
+from sqlalchemy import Column, String, Integer, DateTime, MetaData, func, ForeignKey
+from sqlalchemy.orm import relationship
+
+from lexio.base import Base
+
 
 
 class User(Base):
     __tablename__ = 'users'
-    email = db.Column(db.String, nullable=False, unique=True, index=True)
-    password_hash = db.Column(db.String(), nullable=False)
-    confirmation_token = db.Column(db.String)
-    confirmed_at = db.Column(db.DateTime)
-    confirmation_sent_at = db.Column(db.DateTime)
-    reset_password_token = db.Column(db.String)
-    reset_password_sent_at = db.Column(db.DateTime)
-    roles = db.relationship('Role', secondary='user_roles')
-    teams = db.relationship('Team', secondary='team_members')
-    articles = db.relationship('Article')
+    username = Column(String, nullable=False, unique=True, index=True)
+    first_name = Column(String, nullable=False)
+    last_name = Column(String, nullable=False)
+    email = Column(String, nullable=False, unique=True, index=True)
+    password_hash = Column(String(), nullable=False)
+    confirmation_token = Column(String)
+    confirmed_at = Column(DateTime)
+    confirmation_sent_at = Column(DateTime)
+    reset_password_token = Column(String)
+    reset_password_sent_at = Column(DateTime)
+    roles = relationship('Role', secondary='user_roles')
+    teams = relationship('Team', secondary='team_members')
+    articles = relationship('Article')
 
     def __init__(self, email, password_hash, account_id, roles=None, teams=None, confirmation_token=None, confirmed_at=None, confirmation_sent_at=None, reset_password_token=None, reset_password_sent_at=None):
         self.email = email

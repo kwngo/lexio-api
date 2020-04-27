@@ -1,13 +1,14 @@
-from flask_sqlalchemy import SQLAlchemy
+from db import DeclarativeBase
+from sqlalchemy import Column, Integer, DateTime, MetaData, func
 
-db = SQLAlchemy()
 
-class Base(db.Model):
+class Base(DeclarativeBase):
     __abstract__  = True
-    id            = db.Column(db.Integer, primary_key=True)
-    date_created  = db.Column(db.DateTime,  default=db.func.current_timestamp())
-    date_modified = db.Column(db.DateTime,  default=db.func.current_timestamp(),
-                                           onupdate=db.func.current_timestamp())
+    id            = Column(Integer, primary_key=True)
+    date_created  = Column(DateTime,  default=func.current_timestamp())
+    date_modified = Column(DateTime,  default=func.current_timestamp(),
+                                           onupdate=func.current_timestamp())
+    metadata = MetaData()
 
     def __repr__(self):
         return f'<{self.__class__.__name__}(id="{self.id}")>'
