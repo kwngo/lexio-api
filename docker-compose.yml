@@ -5,10 +5,11 @@ services:
     ports:
       - "54320:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgresdb:/var/lib/postgresql/data
     environment:
-      POSTGRES_PASSWORD: password
-      POSTGRES_USER: postgres
+      POSTGRES_DB: lexioapi_dev
+      POSTGRES_USER: postgres 
+      POSTGRES_PASSWORD: postgres
   api:
     build:
       context: .
@@ -17,8 +18,10 @@ services:
       - "8080:8080"
     volumes:
       - .:/app
+    environment:
+        DATABASE_URL: postgresql://postgres:postgres@postgres:5432/lexioapi_dev?sslmode=disable
     depends_on:
       - postgres
 volumes:
-  postgres_data:
+  postgresdb:
 
