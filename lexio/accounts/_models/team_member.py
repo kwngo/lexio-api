@@ -11,6 +11,6 @@ class TeamMember(Base):
     team = relationship("Team", backref=backref("team_members", cascade="all, delete-orphan"))
 
     def __init__(self, user_id, team_id):
-        self.member_id = user_id
+        self.user_id = user_id
         self.team_id = team_id
 

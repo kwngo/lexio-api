@@ -19,12 +19,13 @@ class User(Base):
     reset_password_sent_at = Column(DateTime)
     roles = relationship('Role', secondary='user_roles')
     teams = relationship('Team', secondary='team_members')
-    articles = relationship('Article')
 
-    def __init__(self, email, password_hash, account_id, roles=None, teams=None, confirmation_token=None, confirmed_at=None, confirmation_sent_at=None, reset_password_token=None, reset_password_sent_at=None):
+    def __init__(self, email, username, first_name, last_name, password_hash, roles=None, teams=None, confirmation_token=None, confirmed_at=None, confirmation_sent_at=None, reset_password_token=None, reset_password_sent_at=None):
         self.email = email
+        self.username = username
+        self.first_name = first_name
+        self.last_name=last_name
         self.password_hash = password_hash
-        self.account_id = account_id
         self.confirmation_token = confirmation_token
         self.confirmed_at = confirmed_at
         self.confirmation_sent_at = confirmation_sent_at

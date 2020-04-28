@@ -17,9 +17,8 @@ class UserCreate(BaseModel):
 
 def create_user(db : Session, user: UserCreate):
     password_hash = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt())
-    user = User(email=user.email, password_hash=password_hash,\
-        username=user.username, first_name=user.first_name,\
-        last_name=user.last_name)
+    user = User(user.email, user.username, password_hash,\
+        user.first_name, user.last_name)
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -33,9 +32,9 @@ def create_team(db : Session, team: TeamCreate):
     db.add(db_team)
     db.commit()
     db.refresh(db_team)
-    return team
+    return db_team
 
-def assign_member_to_team(db: Session, user_id: int, team_id: int):
+def assign_member_to_team(user_id: int, team_id: int, db : Session):
     db_team_member = TeamMember(user_id=user_id, team_id=team_id)
     db.add(db_team_member)
     db.commit()
