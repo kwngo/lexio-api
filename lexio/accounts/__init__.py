@@ -5,7 +5,7 @@ from ._models.team_member import TeamMember
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-import bcrypt
+from passlib.hash import pbkdf2_sha256
 
 
 class UserCreate(BaseModel):
@@ -16,9 +16,9 @@ class UserCreate(BaseModel):
     last_name: str
 
 def create_user(db : Session, user: UserCreate):
-    password_hash = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt())
-    user = User(user.email, user.username, password_hash,\
-        user.first_name, user.last_name)
+    password_hash = pbkdf2_sha256.hash(user.password)
+    user = User(user.email, user.username, \
+        user.first_name, user.last_name, password_hash)
     db.add(user)
     db.commit()
     db.refresh(user)
