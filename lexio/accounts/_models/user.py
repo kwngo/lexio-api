@@ -8,8 +8,8 @@ from lexio.base import Base
 class User(Base):
     __tablename__ = 'users'
     username = Column(String, nullable=False, unique=True, index=True)
-    first_name = Column(String, nullable=False)
-    last_name = Column(String, nullable=False)
+    first_name = Column(String)
+    last_name = Column(String)
     email = Column(String, nullable=False, unique=True, index=True)
     password_hash = Column(String(), nullable=False)
     confirmation_token = Column(String)
@@ -20,7 +20,7 @@ class User(Base):
     roles = relationship('Role', secondary='user_roles')
     teams = relationship('Team', secondary='team_members')
 
-    def __init__(self, email, username, first_name, last_name, password_hash, roles=None, teams=None, confirmation_token=None, confirmed_at=None, confirmation_sent_at=None, reset_password_token=None, reset_password_sent_at=None):
+    def __init__(self, email, username, password_hash, first_name=None, last_name=None, roles=None, teams=None, confirmation_token=None, confirmed_at=None, confirmation_sent_at=None, reset_password_token=None, reset_password_sent_at=None):
         self.email = email
         self.username = username
         self.first_name = first_name

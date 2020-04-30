@@ -12,13 +12,11 @@ class UserCreate(BaseModel):
     username: str
     email: str
     password: str
-    first_name: str
-    last_name: str
 
 def create_user(db : Session, user: UserCreate):
     password_hash = pbkdf2_sha256.hash(user.password)
     user = User(user.email, user.username, \
-        user.first_name, user.last_name, password_hash)
+        password_hash)
     db.add(user)
     db.commit()
     db.refresh(user)

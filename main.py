@@ -4,6 +4,7 @@ from db import SessionLocal, engine
 
 from datetime import datetime, timedelta
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
@@ -25,6 +26,22 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+app = FastAPI()
+
+origins = [
+    "http://localhost",
+    "http://localhost:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")
@@ -102,6 +119,7 @@ def authenticate(authentication: Authentication, response: Response, db: Session
     response = JSONResponse(content=content)
     response.set_cookie(
         "Authorization",
+        domain="127.0.0.1",
         value=f"Basic: {access_token}",
         httponly=True,
         max_age=1800,
@@ -115,8 +133,6 @@ def register(registration: Registration, db: Session = Depends(get_db)):
     registration_dict = registration.dict()
     email = registration_dict.get('email')
     username = registration_dict.get('username')
-    first_name = registration_dict.get('first_name')
-    last_name = registration_dict.get('last_name')
     password = registration_dict.get('password')
     password_confirmation = registration_dict.get('password_confirmation')
     team_name = registration_dict.get('team_name')
@@ -132,6 +148,9 @@ def register(registration: Registration, db: Session = Depends(get_db)):
 
     if user_exists or username_exists:
         raise HTTPException(status_code=400, detail="User could not be created.")
+    if password < 8:
+        raise HTTPException(status_code=400, detail="Passwords should be more than 8 characters.")
+
 
     if password != password_confirmation:
         raise HTTPException(status_code=400, detail="Passwords do not match.")
@@ -139,7 +158,7 @@ def register(registration: Registration, db: Session = Depends(get_db)):
     # Turn this into transaction
     try:
         team = create_team(db=db, team=TeamCreate(name=team_name))
-        user = create_user(db=db, user=UserCreate(email=email, password=password, username=username, first_name=first_name, last_name=last_name))
+        user = create_user(db=db, user=UserCreate(email=email, password=password, username=username))
         assign_member_to_team(user.id, team.id, db=db)
     except SQLAlchemyError:
         raise HTTPException(status_code=400, detail="New account creation failed")
