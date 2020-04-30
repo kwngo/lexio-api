@@ -3,22 +3,23 @@ from lexio.accounts.models import User
 from db import SessionLocal, engine
 
 from datetime import datetime, timedelta
-from fastapi import Depends, FastAPI, HTTPException, Request, Response
+from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security.base import SecurityBase
+from fastapi.security.utils import get_authorization_scheme_param
 
 from pydantic import BaseModel
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from passlib.hash import pbkdf2_sha256
+from typing import Optional
 import jwt
 import time
 
 
 app = FastAPI()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
 def get_db():
     try:
@@ -52,8 +53,6 @@ def read_root():
 class Registration(BaseModel):
     username: str
     email: str
-    first_name: str
-    last_name: str
     password: str
     password_confirmation: str
     team_name: str
@@ -90,8 +89,42 @@ def create_access_token(*, data: dict, expires_delta: timedelta = None):
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM).decode('utf-8')
     return encoded_jwt
+
+
+class Auth(SecurityBase):
+    def __init__(self, scheme_name: str = None, auto_error: bool = True):
+        self.scheme_name = scheme_name or self.__class__.__name__
+        self.auto_error = auto_error
+
+    async def __call__(self, request: Request) -> Optional[str]:
+        authorization: str = request.headers.get("Authorization")
+        scheme, param = get_authorization_scheme_param(authorization)
+        if not authorization:
+            if self.auto_error:
+                raise HTTPException(
+                    status_code=HTTP_403_FORBIDDEN, detail="Not authenticated"
+                )
+            else:
+                return None
+        return param
+
+auth = Auth(auto_error=False)
+
+@app.get('/teams')
+def teams(db: Session = Depends(get_db), auth: Auth = Depends(auth)):
+    if not auth:
+        response = Response(headers={"WWW-Authenticate": "Basic"}, status_code=401)
+        return response
+    decoded_jwt = jwt.decode(auth, SECRET_KEY, algorithm=ALGORITHM)
+    username = decoded_jwt.get('sub')
+    user = db.query(User) \
+        .filter(User.username == username) \
+        .one()
+    teams = user.teams
+    return {'teams': teams}
+
 
 
 @app.post('/authenticate')
@@ -117,10 +150,10 @@ def authenticate(authentication: Authentication, response: Response, db: Session
     content = {"message": "Come to the dark side, we have cookies"}
 
     response = JSONResponse(content=content)
+    cookie = f'Basic: {access_token}'
     response.set_cookie(
         "Authorization",
-        domain="127.0.0.1",
-        value=f"Basic: {access_token}",
+        value=cookie,
         httponly=True,
         max_age=1800,
         expires=1800,
@@ -148,7 +181,7 @@ def register(registration: Registration, db: Session = Depends(get_db)):
 
     if user_exists or username_exists:
         raise HTTPException(status_code=400, detail="User could not be created.")
-    if password < 8:
+    if len(password) < 8:
         raise HTTPException(status_code=400, detail="Passwords should be more than 8 characters.")
 
 
