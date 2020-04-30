@@ -112,9 +112,17 @@ class Auth(SecurityBase):
 
 auth = Auth(auto_error=False)
 
+def get_current_user(token):
+    if not token:
+        return None
+    decoded_jwt = jwt.decode(token, SECRET_KEY, algorithm=ALGORITHM)
+    username = decoded_jwt.get('sub')
+    return username
+
 @app.get('/teams')
 def teams(db: Session = Depends(get_db), auth: Auth = Depends(auth)):
-    if not auth:
+    username = get_current_user(auth)
+    if not username:
         response = Response(headers={"WWW-Authenticate": "Basic"}, status_code=401)
         return response
     decoded_jwt = jwt.decode(auth, SECRET_KEY, algorithm=ALGORITHM)
