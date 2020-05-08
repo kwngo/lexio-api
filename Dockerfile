@@ -6,7 +6,7 @@ ARG PIP_REQ_FILE=requirements.txt
 
 COPY $PIP_REQ_FILE .
 
-RUN pip install -r dev_requirements.txt
+RUN pip install -r $PIP_REQ_FILE
 
 COPY . /app
 
