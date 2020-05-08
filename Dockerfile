@@ -4,7 +4,7 @@ ENV PORT 80
 
 ARG PIP_REQ_FILE=requirements.txt
 
-COPY PIP_REQ_FILE .
+COPY $PIP_REQ_FILE .
 
 RUN pip install -r dev_requirements.txt
 
