@@ -32,6 +32,7 @@ def get_db():
 app = FastAPI()
 
 origins = [
+    "https://lexio-web.herokuapp.com/",
     "http://localhost",
     "http://localhost:3000",
 ]
