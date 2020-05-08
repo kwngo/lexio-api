@@ -42,7 +42,7 @@ def run_migrations_offline():
     script output.
 
     """
-    config.set_main_option('sqlalchemy.url', os.Environ["DATABASE_URL"])
+    config.set_main_option('sqlalchemy.url', os.environ["DATABASE_URL"])
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
