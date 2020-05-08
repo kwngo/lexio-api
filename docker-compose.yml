@@ -8,7 +8,7 @@ services:
       - postgresdb:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: lexioapi_dev
-      POSTGRES_USER: postgres 
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
   api:
     build:
@@ -19,7 +19,9 @@ services:
     volumes:
       - .:/app
     environment:
+        PIP_REQ_FILE: dev_requirements.txt
         DATABASE_URL: postgresql://postgres:postgres@postgres:5432/lexioapi_dev?sslmode=disable
+        PORT: 8080
     depends_on:
       - postgres
 volumes:
